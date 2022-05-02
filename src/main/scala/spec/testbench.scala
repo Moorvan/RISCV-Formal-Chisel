@@ -9,8 +9,8 @@ import spec.insns.insn_add
 class RVFI_IO() extends Bundle {
   val valid     = Output(Bool())
   val insn      = Output(UInt(32.W))
-  val pc_rdata  = Output(UInt(32.W))
-  val pc_wdata  = Output(UInt(32.W))
+//  val pc_rdata  = Output(UInt(32.W))
+//  val pc_wdata  = Output(UInt(32.W))
   val rs1_addr  = Output(UInt(5.W))
   val rs2_addr  = Output(UInt(5.W))
   val rs1_rdata = Output(UInt(32.W))
@@ -19,7 +19,7 @@ class RVFI_IO() extends Bundle {
   val rd_wdata  = Output(UInt(32.W))
   val mem_addr  = Output(UInt(32.W))
   val mem_rdata = Output(UInt(32.W))
-  val mem_wdata = Output(UInt(32.W))
+//  val mem_wdata = Output(UInt(32.W))
   val regs      = Vec(32, Output(UInt(32.W)))
 }
 
@@ -40,5 +40,6 @@ class testbench extends Module with Formal {
 
 
 object testbench extends App {
-  Check.bmc(() => new testbench, 10)
+//  Check.bmc(() => new testbench, 10)
+  Check.kInduction(() => new testbench, 10)
 }
