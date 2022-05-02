@@ -2,5 +2,5 @@
 /project/
 /target/
 /insn_add_build/
-/.*_build/
-/.*_prove/
+/*_build/
+/*_prove/
