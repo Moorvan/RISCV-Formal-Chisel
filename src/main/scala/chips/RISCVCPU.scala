@@ -89,9 +89,17 @@ class RISCVCPU extends Module with Formal {
   io.rvfi.rs1_rdata := 0.U
   io.rvfi.rs2_rdata := 0.U
   io.rvfi.mem_addr := 0.U
+  io.rvfi.pc_rdata := 0.U
+  past(PC, 4) { past_pc =>
+    io.rvfi.valid := true.B
+    io.rvfi.pc_rdata := past_pc
+  }
+  io.rvfi.pc_wdata := 0.U
+  past(PC, 3) { past_pc =>
+    io.rvfi.pc_wdata := past_pc
+  }
   past(IFIDrs1, 3) { past_rs1 =>
     io.rvfi.rs1_addr := past_rs1
-    io.rvfi.valid := true.B
   }
   past(IFIDrs2, 3) { past_rs2 =>
     io.rvfi.rs2_addr := past_rs2
@@ -107,11 +115,13 @@ class RISCVCPU extends Module with Formal {
     io.rvfi.mem_addr := past_mem_addr
   }
   io.rvfi.mem_rdata := MEMWBValue
+  io.rvfi.mem_wdata := 0.U
+  past(EXMEMB, 1) { past_mem_wdata =>
+    io.rvfi.mem_wdata := past_mem_wdata
+  }
 }
 
 
 object RISCVCPU extends App {
-  //  Check.generateRTL(() => new chips.RISCVCPU)
-  Check.kInduction(() => new RISCVCPU, depth = 3)
-
+    Check.generateRTL(() => new chips.RISCVCPU)
 }
