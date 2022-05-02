@@ -71,9 +71,13 @@ class RISCVCPU extends Module with Formal {
 
   MEMWBIR := EXMEMIR
 
+  // rvfi io rd_wdata
+  io.rvfi.rd_wdata := 0.U
+
   // WB stage
   when(((MEMWBop === LD) || (MEMWBop === ALUop)) && (MEMWBrd =/= 0.U)) {
     Regs(MEMWBrd) := MEMWBValue
+    io.rvfi.rd_wdata := MEMWBValue
   }
 
   // rvfi io
@@ -99,13 +103,10 @@ class RISCVCPU extends Module with Formal {
     io.rvfi.rs2_rdata := past_rs2_data
   }
   io.rvfi.rd_addr := MEMWBrd
-  io.rvfi.rd_wdata := MEMWBValue
   past(EXMEMALUOut, 1) { past_mem_addr =>
     io.rvfi.mem_addr := past_mem_addr
   }
-  io.rvfi.rd_wdata := MEMWBValue
   io.rvfi.mem_rdata := MEMWBValue
-
 }
 
 

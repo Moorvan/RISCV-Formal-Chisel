@@ -41,7 +41,7 @@ class insn_add extends Module with Formal {
   val result         = spec_rs1_rdata + spec_rs2_rdata
   val spec_rd_wdata  = Wire(UInt(32.W))
   when(spec_rd_addr === 0.U) {
-    spec_rd_wdata := result
+    spec_rd_wdata := 0.U
   }.otherwise {
     spec_rd_wdata := result
   }
@@ -56,9 +56,9 @@ class insn_add extends Module with Formal {
     assert(rs1_addr === spec_rs1_addr)
     assert(rs2_addr === spec_rs2_addr)
     assert(rd_addr === spec_rd_addr)
-//    assert(rs1_rdata === spec_rs1_rdata)
-//    assert(rs2_rdata === spec_rs2_rdata)
-//    assert(rd_wdata === spec_rd_wdata)
+    assert(rs1_rdata === spec_rs1_rdata)
+    assert(rs2_rdata === spec_rs2_rdata)
+    assert(rd_wdata === spec_rd_wdata)
   }
 }
 
