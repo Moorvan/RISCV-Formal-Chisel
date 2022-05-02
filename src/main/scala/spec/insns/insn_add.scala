@@ -60,20 +60,6 @@ class insn_add extends Module with Formal {
   io.spec_out.mem_addr := io.in.mem_addr
   io.spec_out.mem_wdata := io.in.mem_wdata
 
-//    when(spec_valid && io.in.valid) {
-//      when(rs1_addr === 0.U) {
-//        assert(rs1_rdata === 0.U)
-//      }
-//      when(rs2_addr === 0.U) {
-//        assert(rs2_rdata === 0.U)
-//      }
-//      assert(rs1_addr === spec_rs1_addr)
-//      assert(rs2_addr === spec_rs2_addr)
-//      assert(rd_addr === spec_rd_addr)
-//      assert(rs1_rdata === spec_rs1_rdata)
-//      assert(rs2_rdata === spec_rs2_rdata)
-//      assert(rd_wdata === spec_rd_wdata)
-//    }
 }
 
 
