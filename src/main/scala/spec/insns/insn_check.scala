@@ -20,7 +20,7 @@ class insn_check extends Module with Formal {
     }
     assert(model.rs1_addr === spec.rs1_addr)
     assert(model.rs2_addr === spec.rs2_addr)
-    assert(model.rd_addr  === spec.rd_addr)
+    assert(model.rd_addr === spec.rd_addr)
     assert(model.rs1_rdata === spec.rs1_rdata)
     assert(model.rs2_rdata === spec.rs2_rdata)
     assert(model.rd_wdata === spec.rd_wdata)

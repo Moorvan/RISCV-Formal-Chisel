@@ -47,9 +47,11 @@ class RISCVCPU extends Module with Formal {
 
   // third instruction is doing address calculation or ALU operation
   when(IDEXop === LD) {
-    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 20))
+//    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 20))
+    EXMEMALUOut := (IDEXA.asSInt + IDEXIR(31, 20).asSInt).asUInt
   }.elsewhen(IDEXop === SD) {
-    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 25), IDEXIR(11, 7))
+//    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 25), IDEXIR(11, 7))
+    EXMEMALUOut := (IDEXA.asSInt + Cat(IDEXIR(31, 25), IDEXIR(11, 7)).asSInt).asUInt
   }.elsewhen(IDEXop === ALUop) {
     switch(IDEXIR(31, 25)) {
       is(0.U) {
