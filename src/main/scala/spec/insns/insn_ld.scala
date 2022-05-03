@@ -32,7 +32,6 @@ class insn_ld extends Module with Formal {
   val spec_rs1_addr  = insn_rs1
   val spec_rd_addr   = insn_rd
   val spec_rs1_rdata = io.in.regs(spec_rs1_addr)
-//  val spec_rs1_rdata = io.in.rs1_rdata
   val spec_mem_addr  = (spec_rs1_rdata.asSInt + insn_imm).asUInt
   val spec_rd_wdata  = Wire(UInt(32.W))
   when(spec_rd_addr =/= 0.U) {
