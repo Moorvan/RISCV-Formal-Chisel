@@ -41,18 +41,18 @@ class testbench extends Module with Formal {
   val model = Module(new RISCVCPU).io
 
   // instruction add check
-//    val insn_add_spec = Module(new insn_add).io
-//    val insn_add_check = Module(new insn_check).io
-//    insn_add_spec.in := model.rvfi
-//    insn_add_check.model_out := model.rvfi
-//    insn_add_check.spec_out := insn_add_spec.spec_out
+  val insn_add_spec  = Module(new insn_add).io
+  val insn_add_check = Module(new insn_check).io
+  insn_add_spec.in := model.rvfi
+  insn_add_check.model_out := model.rvfi
+  insn_add_check.spec_out := insn_add_spec.spec_out
 
   // instruction ld check
-  val insn_ld_spec  = Module(new insn_ld).io
-  val insn_ld_check = Module(new insn_check).io
-  insn_ld_spec.in := model.rvfi
-  insn_ld_check.model_out := model.rvfi
-  insn_ld_check.spec_out := insn_ld_spec.spec_out
+  //  val insn_ld_spec  = Module(new insn_ld).io
+  //  val insn_ld_check = Module(new insn_check).io
+  //  insn_ld_spec.in := model.rvfi
+  //  insn_ld_check.model_out := model.rvfi
+  //  insn_ld_check.spec_out := insn_ld_spec.spec_out
 }
 
 
