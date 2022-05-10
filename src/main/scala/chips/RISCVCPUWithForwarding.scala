@@ -107,8 +107,7 @@ class RISCVCPUWithForwarding extends Module with Formal {
   // rvfi io rd_wdata
   io.rvfi.rd_wdata := 0.U
   // WB stage
-  //  when(((MEMWBop === LD) || (MEMWBop === ALUop)) && (MEMWBrd =/= 0.U)) {
-  when(MEMWBop === ALUop && MEMWBrd =/= 0.U) {
+  when(((MEMWBop === LD) || (MEMWBop === ALUop)) && (MEMWBrd =/= 0.U)) {
     Regs(MEMWBrd) := MEMWBValue
     io.rvfi.rd_wdata := MEMWBValue
   }
@@ -172,11 +171,11 @@ class RISCVCPUWithForwarding extends Module with Formal {
       io.rvfi.rs2_rdata := Regs(MEMWBrs2)
     }
   }
-//  past(pass, 2) { v =>
-//    when(v) {
-//      io.rvfi.rs1_rdata := Regs(MEMWBrs1)
-//    }
-//  }
+  //  past(pass, 2) { v =>
+  //    when(v) {
+  //      io.rvfi.rs1_rdata := Regs(MEMWBrs1)
+  //    }
+  //  }
 }
 
 
