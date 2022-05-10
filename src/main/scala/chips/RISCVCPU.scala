@@ -18,7 +18,7 @@ class RISCVCPU extends Module with Formal {
   val ALUop = "b011_0011".U(7.W)
 
   val PC                                            = RegInit(0.U(64.W))
-  val Regs                                          = VecInit(Seq.fill(32)(RegInit(0.U(64.W))))
+  val Regs                                          = RegInit(VecInit(Seq.fill(32)(0.U(64.W))))
   val IDEXA, IDEXB, EXMEMB, EXMEMALUOut, MEMWBValue = Reg(UInt(64.W))
   val IMemory, DMemory                              = Mem(1024, UInt(32.W))
   val IFIDIR, IDEXIR, EXMEMIR, MEMWBIR              = RegInit(NOP)
