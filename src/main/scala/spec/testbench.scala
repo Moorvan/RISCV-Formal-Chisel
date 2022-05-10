@@ -1,6 +1,6 @@
 package spec
 
-import chips.RISCVCPU
+import chips._
 import chisel3._
 import chiselsby._
 import spec.insns.{insn_add, insn_check, insn_ld}
@@ -38,7 +38,7 @@ class spec_out() extends Bundle {
 
 
 class testbench extends Module with Formal {
-  val model = Module(new RISCVCPU).io
+  val model = Module(new RISCVCPUWithForwarding).io
 
   // instruction add check
   val insn_add_spec  = Module(new insn_add).io
@@ -57,6 +57,6 @@ class testbench extends Module with Formal {
 
 
 object testbench extends App {
-  //  Check.bmc(() => new testbench, 10)
-  Check.kInduction(() => new testbench, 10)
+    Check.bmc(() => new testbench, 10)
+//  Check.kInduction(() => new testbench, 10)
 }

@@ -17,7 +17,7 @@ class RISCVCPUWithForwarding extends Module with Formal {
   val ALUop = "b011_0011".U(7.W)
 
   val PC                                                   = RegInit(0.U(64.W))
-  val Regs                                                 = VecInit(Seq.fill(32)(RegInit(0.U(64.W))))
+  val Regs                                                 = RegInit(VecInit(Seq.fill(32)(0.U(64.W))))
   val IDEXA, IDEXB, EXMEMB, EXMEMALUOut, MEMWBValue        = Reg(UInt(64.W))
   val IMemory, DMemory                                     = Mem(1024, UInt(32.W))
   val IFIDIR, IDEXIR, EXMEMIR, MEMWBIR                     = RegInit(NOP)
@@ -45,20 +45,24 @@ class RISCVCPUWithForwarding extends Module with Formal {
   bypassAfromLDinWB := (IDEXrs1 === MEMWBrd) && (IDEXrs1 =/= 0.U) && (MEMWBop === LD)
   bypassBfromLDinWB := (IDEXrs2 === MEMWBrd) && (IDEXrs2 =/= 0.U) && (MEMWBop === LD)
 
+  // Auxiliary
+  val MEMWBrs1: UInt = MEMWBIR(19, 15)
+  val MEMWBrs2: UInt = MEMWBIR(24, 20)
+
   // Use the bypass signals to determine the input to the ALU
   when(bypassAfromMEM) {
     Ain := EXMEMALUOut
-  } .elsewhen(bypassAfromALUinWB || bypassAfromLDinWB) {
+  }.elsewhen(bypassAfromALUinWB || bypassAfromLDinWB) {
     Ain := MEMWBValue
-  } .otherwise {
+  }.otherwise {
     Ain := IDEXA
   }
 
   when(bypassBfromMEM) {
     Bin := EXMEMALUOut
-  } .elsewhen(bypassBfromALUinWB || bypassBfromLDinWB) {
+  }.elsewhen(bypassBfromALUinWB || bypassBfromLDinWB) {
     Bin := MEMWBValue
-  } .otherwise {
+  }.otherwise {
     Bin := IDEXB
   }
 
@@ -75,10 +79,10 @@ class RISCVCPUWithForwarding extends Module with Formal {
   // third instruction is doing address calculation or ALU operation
   when(IDEXop === LD) {
     //    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 20))
-    EXMEMALUOut := (IDEXA.asSInt + IDEXIR(31, 20).asSInt).asUInt
+    EXMEMALUOut := (Ain.asSInt + IDEXIR(31, 20).asSInt).asUInt
   }.elsewhen(IDEXop === SD) {
     //    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 25), IDEXIR(11, 7))
-    EXMEMALUOut := (IDEXA.asSInt + Cat(IDEXIR(31, 25), IDEXIR(11, 7)).asSInt).asUInt
+    EXMEMALUOut := (Ain.asSInt + Cat(IDEXIR(31, 25), IDEXIR(11, 7)).asSInt).asUInt
   }.elsewhen(IDEXop === ALUop) {
     switch(IDEXIR(31, 25)) {
       is(0.U) {
@@ -102,9 +106,9 @@ class RISCVCPUWithForwarding extends Module with Formal {
 
   // rvfi io rd_wdata
   io.rvfi.rd_wdata := 0.U
-
   // WB stage
-  when(((MEMWBop === LD) || (MEMWBop === ALUop)) && (MEMWBrd =/= 0.U)) {
+  //  when(((MEMWBop === LD) || (MEMWBop === ALUop)) && (MEMWBrd =/= 0.U)) {
+  when(MEMWBop === ALUop && MEMWBrd =/= 0.U) {
     Regs(MEMWBrd) := MEMWBValue
     io.rvfi.rd_wdata := MEMWBValue
   }
@@ -139,6 +143,12 @@ class RISCVCPUWithForwarding extends Module with Formal {
   past(IDEXB, 2) { past_rs2_data =>
     io.rvfi.rs2_rdata := past_rs2_data
   }
+  //  past(Ain, 2) { past_rs1_data =>
+  //    io.rvfi.rs1_rdata := past_rs1_data
+  //  }
+  //  past(Bin, 2) { past_rs2_data =>
+  //    io.rvfi.rs2_rdata := past_rs2_data
+  //  }
   io.rvfi.rd_addr := MEMWBrd
   past(EXMEMALUOut, 1) { past_mem_addr =>
     io.rvfi.mem_addr := past_mem_addr
@@ -148,6 +158,29 @@ class RISCVCPUWithForwarding extends Module with Formal {
   past(EXMEMB, 1) { past_mem_wdata =>
     io.rvfi.mem_wdata := past_mem_wdata
   }
+  val IDEXrd: UInt = IDEXIR(11, 7)
+  val pass  : Bool = IDEXrs1 === EXMEMrd || IDEXrs1 === MEMWBrd
+  val pass1 : Bool = IFIDrs1 === IDEXrd || IFIDrs1 === EXMEMrd || IFIDrs1 === MEMWBrd
+  val pass2 : Bool = IFIDrs2 === IDEXrd || IFIDrs2 === EXMEMrd || IFIDrs2 === MEMWBrd
+  past(pass1, 3) { v =>
+    when(v) {
+      io.rvfi.rs1_rdata := Regs(MEMWBrs1)
+    }
+  }
+  past(pass2, 3) { v =>
+    when(v) {
+      io.rvfi.rs2_rdata := Regs(MEMWBrs2)
+    }
+  }
+//  past(pass, 2) { v =>
+//    when(v) {
+//      io.rvfi.rs1_rdata := Regs(MEMWBrs1)
+//    }
+//  }
 }
 
+
+object RISCVCPUWithForwarding extends App {
+  Check.generateRTL(() => new RISCVCPUWithForwarding)
+}
 
