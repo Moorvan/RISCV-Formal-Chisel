@@ -38,7 +38,7 @@ class spec_out() extends Bundle {
 
 
 class testbench extends Module with Formal {
-  val model = Module(new RISCVCPUWithForwarding).io
+  val model = Module(new RISCVCPUv1).io
 
   // instruction add check
   val insn_add_spec  = Module(new insn_add).io
@@ -48,15 +48,15 @@ class testbench extends Module with Formal {
   insn_add_check.spec_out := insn_add_spec.spec_out
 
   // instruction ld check
-  //  val insn_ld_spec  = Module(new insn_ld).io
-  //  val insn_ld_check = Module(new insn_check).io
-  //  insn_ld_spec.in := model.rvfi
-  //  insn_ld_check.model_out := model.rvfi
-  //  insn_ld_check.spec_out := insn_ld_spec.spec_out
+  val insn_ld_spec  = Module(new insn_ld).io
+  val insn_ld_check = Module(new insn_check).io
+  insn_ld_spec.in := model.rvfi
+  insn_ld_check.model_out := model.rvfi
+  insn_ld_check.spec_out := insn_ld_spec.spec_out
 }
 
 
 object testbench extends App {
-    Check.bmc(() => new testbench, 10)
-//  Check.kInduction(() => new testbench, 10)
+  Check.bmc(() => new testbench, 10)
+  //  Check.kInduction(() => new testbench, 10)
 }

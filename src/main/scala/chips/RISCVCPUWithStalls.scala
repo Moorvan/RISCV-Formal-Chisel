@@ -6,7 +6,7 @@ import chiselsby._
 import spec.RVFI_IO
 
 
-class RISCVCPUWithForwarding extends Module with Formal {
+class RISCVCPUWithStalls extends Module with Formal {
   val io    = IO(new Bundle {
     val rvfi = new RVFI_IO
   })
@@ -26,6 +26,7 @@ class RISCVCPUWithForwarding extends Module with Formal {
   val Ain, Bin                                             = Wire(UInt(64.W))
 
   val bypassAfromMEM, bypassAfromALUinWB, bypassBfromMEM, bypassBfromALUinWB, bypassAfromLDinWB, bypassBfromLDinWB = Wire(Bool())
+  val stall: Bool                                                                                                  = Wire(Bool())
 
   IFIDrs1 := IFIDIR(19, 15)
   IFIDrs2 := IFIDIR(24, 20)
@@ -45,9 +46,14 @@ class RISCVCPUWithForwarding extends Module with Formal {
   bypassAfromLDinWB := (IDEXrs1 === MEMWBrd) && (IDEXrs1 =/= 0.U) && (MEMWBop === LD)
   bypassBfromLDinWB := (IDEXrs2 === MEMWBrd) && (IDEXrs2 =/= 0.U) && (MEMWBop === LD)
 
+  stall := (MEMWBop === LD) && (
+    (((IDEXop === LD) || (IDEXop === SD)) && (IDEXrs1 ===  MEMWBrd)) || ((IDEXop === ALUop) && ((IDEXrs1 === MEMWBrd) || (IDEXrs2 === MEMWBrd)))
+  )
+
   // Auxiliary
   val MEMWBrs1: UInt = MEMWBIR(19, 15)
   val MEMWBrs2: UInt = MEMWBIR(24, 20)
+  val EXMEMA, MEMWBA, MEMWBB = Reg(UInt(64.W))
 
   // Use the bypass signals to determine the input to the ALU
   when(bypassAfromMEM) {
@@ -66,32 +72,39 @@ class RISCVCPUWithForwarding extends Module with Formal {
     Bin := IDEXB
   }
 
-  // first instruction in pipeline is being fetched
-  // Fetch & increment PC
-  IFIDIR := IMemory.read((PC >> 2.U).asUInt)
-  PC := PC + 4.U
+  EXMEMA := IDEXA
+  MEMWBA := EXMEMA
 
-  // second instruction in pipeline is fetching registers
-  IDEXA := Regs(IFIDrs1)
-  IDEXB := Regs(IFIDrs2)
-  IDEXIR := IFIDIR
+  when(~stall) {
+    // first instruction in pipeline is being fetched
+    // Fetch & increment PC
+    IFIDIR := IMemory.read((PC >> 2.U).asUInt)
+    PC := PC + 4.U
 
-  // third instruction is doing address calculation or ALU operation
-  when(IDEXop === LD) {
-    //    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 20))
-    EXMEMALUOut := (Ain.asSInt + IDEXIR(31, 20).asSInt).asUInt
-  }.elsewhen(IDEXop === SD) {
-    //    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 25), IDEXIR(11, 7))
-    EXMEMALUOut := (Ain.asSInt + Cat(IDEXIR(31, 25), IDEXIR(11, 7)).asSInt).asUInt
-  }.elsewhen(IDEXop === ALUop) {
-    switch(IDEXIR(31, 25)) {
-      is(0.U) {
-        EXMEMALUOut := Ain + Bin
+    // second instruction in pipeline is fetching registers
+    IDEXA := Regs(IFIDrs1)
+    IDEXB := Regs(IFIDrs2)
+    IDEXIR := IFIDIR
+
+    // third instruction is doing address calculation or ALU operation
+    when(IDEXop === LD) {
+      //    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 20))
+      EXMEMALUOut := (IDEXA.asSInt + IDEXIR(31, 20).asSInt).asUInt
+    }.elsewhen(IDEXop === SD) {
+      //    EXMEMALUOut := IDEXA + Cat(0.U(53.W), IDEXIR(31), IDEXIR(30, 25), IDEXIR(11, 7))
+      EXMEMALUOut := (IDEXA.asSInt + Cat(IDEXIR(31, 25), IDEXIR(11, 7)).asSInt).asUInt
+    }.elsewhen(IDEXop === ALUop) {
+      switch(IDEXIR(31, 25)) {
+        is(0.U) {
+          EXMEMALUOut := Ain + Bin
+        }
       }
     }
+    EXMEMIR := IDEXIR
+    EXMEMB := IDEXB
+  } .otherwise {
+    EXMEMIR := NOP
   }
-  EXMEMIR := IDEXIR
-  EXMEMB := Bin
 
   // Mem stage of pipeline
   when(EXMEMop === ALUop) {
@@ -116,38 +129,47 @@ class RISCVCPUWithForwarding extends Module with Formal {
   io.rvfi.regs := Regs
   io.rvfi.insn := MEMWBIR
   io.rvfi.valid := false.B
-  io.rvfi.rs1_addr := 0.U
-  io.rvfi.rs2_addr := 0.U
+//  io.rvfi.rs1_addr := 0.U
+//  io.rvfi.rs2_addr := 0.U
   io.rvfi.rs1_rdata := 0.U
   io.rvfi.rs2_rdata := 0.U
   io.rvfi.mem_addr := 0.U
   io.rvfi.pc_rdata := 0.U
-  past(PC, 4) { past_pc =>
+
+  io.rvfi.pc_rdata := PC
+  io.rvfi.pc_wdata := PC + 4.U
+  io.rvfi.rs1_addr := MEMWBrs1
+  io.rvfi.rs2_addr := MEMWBrs2
+
+
+//  past(PC, 4) { past_pc =>
+//    io.rvfi.valid := true.B
+//    io.rvfi.pc_rdata := past_pc
+//  }
+//  io.rvfi.pc_wdata := 0.U
+//  past(PC, 3) { past_pc =>
+//    io.rvfi.pc_wdata := past_pc
+//  }
+//  past(IFIDrs1, 3) { past_rs1 =>
+//    io.rvfi.rs1_addr := past_rs1
+//  }
+//  past(IFIDrs2, 3) { past_rs2 =>
+//    io.rvfi.rs2_addr := past_rs2
+//  }
+  past(Ain, 2) { past_rs1_data =>
     io.rvfi.valid := true.B
-    io.rvfi.pc_rdata := past_pc
-  }
-  io.rvfi.pc_wdata := 0.U
-  past(PC, 3) { past_pc =>
-    io.rvfi.pc_wdata := past_pc
-  }
-  past(IFIDrs1, 3) { past_rs1 =>
-    io.rvfi.rs1_addr := past_rs1
-  }
-  past(IFIDrs2, 3) { past_rs2 =>
-    io.rvfi.rs2_addr := past_rs2
-  }
-  past(IDEXA, 2) { past_rs1_data =>
     io.rvfi.rs1_rdata := past_rs1_data
   }
+  io.rvfi.rs1_rdata := MEMWBA
   past(IDEXB, 2) { past_rs2_data =>
     io.rvfi.rs2_rdata := past_rs2_data
   }
-    past(Ain, 2) { past_rs1_data =>
-      io.rvfi.rs1_rdata := past_rs1_data
-    }
-    past(Bin, 2) { past_rs2_data =>
-      io.rvfi.rs2_rdata := past_rs2_data
-    }
+  //  past(Ain, 2) { past_rs1_data =>
+  //    io.rvfi.rs1_rdata := past_rs1_data
+  //  }
+  //  past(Bin, 2) { past_rs2_data =>
+  //    io.rvfi.rs2_rdata := past_rs2_data
+  //  }
   io.rvfi.rd_addr := MEMWBrd
   past(EXMEMALUOut, 1) { past_mem_addr =>
     io.rvfi.mem_addr := past_mem_addr
@@ -157,29 +179,26 @@ class RISCVCPUWithForwarding extends Module with Formal {
   past(EXMEMB, 1) { past_mem_wdata =>
     io.rvfi.mem_wdata := past_mem_wdata
   }
-  val IDEXrd: UInt = IDEXIR(11, 7)
-  val pass  : Bool = IDEXrs1 === EXMEMrd || IDEXrs1 === MEMWBrd
-  val pass1 : Bool = IFIDrs1 === IDEXrd || IFIDrs1 === EXMEMrd || IFIDrs1 === MEMWBrd
-  val pass2 : Bool = IFIDrs2 === IDEXrd || IFIDrs2 === EXMEMrd || IFIDrs2 === MEMWBrd
-  past(pass1, 3) { v =>
-    when(v) {
-      io.rvfi.rs1_rdata := Regs(MEMWBrs1)
-    }
-  }
-  past(pass2, 3) { v =>
-    when(v) {
-      io.rvfi.rs2_rdata := Regs(MEMWBrs2)
-    }
-  }
-//    past(pass, 2) { v =>
-//      when(v) {
-//        io.rvfi.rs1_rdata := Regs(MEMWBrs1)
-//      }
+
+//  val IDEXrd: UInt = IDEXIR(11, 7)
+//  val pass1 : Bool = IFIDrs1 === IDEXrd || IFIDrs1 === EXMEMrd || IFIDrs1 === MEMWBrd
+//  val pass2 : Bool = IFIDrs2 === IDEXrd || IFIDrs2 === EXMEMrd || IFIDrs2 === MEMWBrd
+//  past(pass1, 3) { v =>
+//    when(v) {
+//      io.rvfi.rs1_rdata := Regs(MEMWBrs1)
 //    }
+//  }
+//  past(pass2, 3) { v =>
+//    when(v) {
+//      io.rvfi.rs2_rdata := Regs(MEMWBrs2)
+//    }
+//  }
 }
 
 
-object RISCVCPUWithForwarding extends App {
-  Check.generateRTL(() => new RISCVCPUWithForwarding)
+object RISCVCPUWithStalls extends App {
+  Check.generateRTL(() => new RISCVCPUWithStalls)
 }
+
+
 

@@ -39,7 +39,7 @@ class insn_ld extends Module with Formal {
   }.otherwise {
     spec_rd_wdata := 0.U
   }
-  val spec_out_pc_wdata = pc_rdata + 4.U
+  val spec_out_pc_wdata = io.in.pc_wdata
 
   io.spec_out.valid := spec_valid
   io.spec_out.rs1_addr := spec_rs1_addr
