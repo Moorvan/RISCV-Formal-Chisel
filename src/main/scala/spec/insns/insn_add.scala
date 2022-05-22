@@ -54,7 +54,7 @@ class insn_add extends Module with Formal {
   io.spec_out.rs2_rdata := spec_rs2_rdata
   io.spec_out.rd_addr := spec_rd_addr
   io.spec_out.rd_wdata := spec_rd_wdata
-  io.spec_out.pc_wdata := pc_wdata // TODO: spec w PC
+  io.spec_out.pc_wdata := pc_rdata + 4.U
 
   // without check
   io.spec_out.mem_addr := io.in.mem_addr

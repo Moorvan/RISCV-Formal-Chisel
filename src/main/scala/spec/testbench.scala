@@ -57,6 +57,7 @@ class testbench extends Module with Formal {
 
 
 object testbench extends App {
-  Check.bmc(() => new testbench, 10)
-  //  Check.kInduction(() => new testbench, 10)
+//  Check.bmc(() => new testbench, 10)
+//    Check.kInduction(() => new testbench, 15)
+  Check.pdr(() => new testbench, 10)
 }
