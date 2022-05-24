@@ -27,6 +27,7 @@ class RISCVCPUWithForwarding extends Module with Formal {
 
   val bypassAfromMEM, bypassAfromALUinWB, bypassBfromMEM, bypassBfromALUinWB, bypassAfromLDinWB, bypassBfromLDinWB = Wire(Bool())
 
+
   IFIDrs1 := IFIDIR(19, 15)
   IFIDrs2 := IFIDIR(24, 20)
   IDEXop := IDEXIR(6, 0)
