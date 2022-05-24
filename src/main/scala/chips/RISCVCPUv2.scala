@@ -53,6 +53,7 @@ class RISCVCPUv2 extends Module with Formal {
   // Auxiliary
   val MEMWBrs1: UInt = MEMWBIR(19, 15)
   val MEMWBrs2: UInt = MEMWBIR(24, 20)
+  val LastPC = RegInit(0.U(64.W))
 
 
   when(~stall) {
@@ -65,6 +66,7 @@ class RISCVCPUv2 extends Module with Formal {
       IFIDIR := NOP
       PC := (PC.asSInt + Cat(IFIDIR(31), IFIDIR(7), IFIDIR(30, 25), IFIDIR(11, 8), "b0".U(1.W)).asSInt).asUInt
     }
+    LastPC := PC
 
     // second instruction in pipeline is fetching registers
     when(bypassAFromEX) {
@@ -137,13 +139,12 @@ class RISCVCPUv2 extends Module with Formal {
   io.rvfi.rs2_rdata := 0.U
   io.rvfi.mem_addr := 0.U
   io.rvfi.pc_rdata := 0.U
-  past(PC, 4) { past_pc =>
-    io.rvfi.valid := true.B
-    io.rvfi.pc_rdata := past_pc
-  }
   io.rvfi.pc_wdata := 0.U
   past(PC, 3) { past_pc =>
     io.rvfi.pc_wdata := past_pc
+  }
+  past(LastPC, 3) { past_v =>
+    io.rvfi.pc_rdata := past_v
   }
   past(IFIDrs1, 3) { past_rs1 =>
     io.rvfi.rs1_addr := past_rs1
