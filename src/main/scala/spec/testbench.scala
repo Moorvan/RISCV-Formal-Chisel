@@ -3,7 +3,7 @@ package spec
 import chips._
 import chisel3._
 import chiselsby._
-import spec.insns.{insn_add, insn_check, insn_ld}
+import spec.insns._
 
 
 class RVFI_IO() extends Bundle {
@@ -38,21 +38,29 @@ class spec_out() extends Bundle {
 
 
 class testbench extends Module with Formal {
-  val model = Module(new RISCVCPUv1).io
+  val model = Module(new RISCVCPUv2).io
 
-  // instruction add check
-  val insn_add_spec  = Module(new insn_add).io
-  val insn_add_check = Module(new insn_check).io
-  insn_add_spec.in := model.rvfi
-  insn_add_check.model_out := model.rvfi
-  insn_add_check.spec_out := insn_add_spec.spec_out
+//  // instruction add check
+//  val insn_add_spec  = Module(new insn_add).io
+//  val insn_add_check = Module(new insn_check).io
+//  insn_add_spec.in := model.rvfi
+//  insn_add_check.model_out := model.rvfi
+//  insn_add_check.spec_out := insn_add_spec.spec_out
+//
+//  // instruction ld check
+//  val insn_ld_spec  = Module(new insn_ld).io
+//  val insn_ld_check = Module(new insn_check).io
+//  insn_ld_spec.in := model.rvfi
+//  insn_ld_check.model_out := model.rvfi
+//  insn_ld_check.spec_out := insn_ld_spec.spec_out
 
-  // instruction ld check
-  val insn_ld_spec  = Module(new insn_ld).io
-  val insn_ld_check = Module(new insn_check).io
-  insn_ld_spec.in := model.rvfi
-  insn_ld_check.model_out := model.rvfi
-  insn_ld_check.spec_out := insn_ld_spec.spec_out
+  // instruction beq check
+  val insn_beq_spec = Module(new insn_beq).io
+  val insn_beq_check = Module(new insn_check).io
+  insn_beq_spec.in := model.rvfi
+  insn_beq_check.model_out := model.rvfi
+  insn_beq_check.spec_out := insn_beq_spec.spec_out
+//  assert(model.take === insn_beq_spec.take)
 }
 
 

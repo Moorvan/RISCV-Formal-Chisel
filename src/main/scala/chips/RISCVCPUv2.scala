@@ -9,6 +9,7 @@ import spec.RVFI_IO
 class RISCVCPUv2 extends Module with Formal {
   val io    = IO(new Bundle {
     val rvfi = new RVFI_IO
+    val take = Output(Bool())
   })
   val LD    = "b000_0011".U(7.W)
   val SD    = "b010_0011".U(7.W)
@@ -34,6 +35,7 @@ class RISCVCPUv2 extends Module with Formal {
 
   val EXMEMrd: UInt = EXMEMIR(11, 7)
   val IDEXrd : UInt = IDEXIR(11, 7)
+  val IFID_funct3   = IFIDIR(14, 12)
 
   val bypassAFromWB  = (IFIDrs1 === MEMWBrd) && (IFIDrs1 =/= 0.U) && (MEMWBop === ALUop || MEMWBop === LD)
   val bypassBFromWB  = (IFIDrs2 === MEMWBrd) && (IFIDrs2 =/= 0.U) && (MEMWBop === ALUop || MEMWBop === LD)
@@ -48,12 +50,14 @@ class RISCVCPUv2 extends Module with Formal {
     (IDEXop === LD) && ((IFIDrs1 === IDEXrd) || (IFIDrs2 === IDEXrd))
     )
 
-  val takeBranch = (IFIDop === BEQ) && (Regs(IFIDrs1) === Regs(IFIDrs2))
+  var A, B = WireInit(0.U(64.W))
+  val takeBranch = (IFIDop === BEQ) && (IFID_funct3 === 0.U) && (A === B)
 
   // Auxiliary
-  val MEMWBrs1: UInt = MEMWBIR(19, 15)
-  val MEMWBrs2: UInt = MEMWBIR(24, 20)
-  val LastPC = RegInit(0.U(64.W))
+  val MEMWBrs1 = MEMWBIR(19, 15)
+  val MEMWBrs2 = MEMWBIR(24, 20)
+  val CurPC    = RegInit(0.U(64.W))
+  val NextPC   = RegInit(0.U(64.W))
 
 
   when(~stall) {
@@ -62,30 +66,41 @@ class RISCVCPUv2 extends Module with Formal {
       // Fetch & increment PC
       IFIDIR := IMemory.read((PC >> 2.U).asUInt)
       PC := PC + 4.U
+      NextPC := PC
     }.otherwise {
       IFIDIR := NOP
-      PC := (PC.asSInt + Cat(IFIDIR(31), IFIDIR(7), IFIDIR(30, 25), IFIDIR(11, 8), "b0".U(1.W)).asSInt).asUInt
+      val branchTarget = (PC.asSInt + Cat(IFIDIR(31), IFIDIR(7), IFIDIR(30, 25), IFIDIR(11, 8), "b0".U(1.W)).asSInt).asUInt
+      PC := branchTarget
+      NextPC := branchTarget
     }
-    LastPC := PC
+    CurPC := PC
 
     // second instruction in pipeline is fetching registers
     when(bypassAFromEX) {
       IDEXA := IDEXA + IDEXB
+      A := IDEXA + IDEXB
     }.elsewhen(bypassAFromMEM) {
       IDEXA := EXMEMALUOut
+      A := EXMEMALUOut
     }.elsewhen(bypassAFromWB) {
       IDEXA := MEMWBValue
+      A := MEMWBValue
     }.otherwise {
       IDEXA := Regs(IFIDrs1)
+      A := Regs(IFIDrs1)
     }
     when(bypassBFromEX) {
       IDEXB := IDEXB + IDEXA
+      B := IDEXB + IDEXA
     }.elsewhen(bypassBFromMEM) {
       IDEXB := EXMEMALUOut
+      B := EXMEMALUOut
     }.elsewhen(bypassBFromWB) {
       IDEXB := MEMWBValue
+      B := MEMWBValue
     }.otherwise {
       IDEXB := Regs(IFIDrs2)
+      B := Regs(IFIDrs2)
     }
     IDEXIR := IFIDIR
   }.otherwise {
@@ -140,11 +155,17 @@ class RISCVCPUv2 extends Module with Formal {
   io.rvfi.mem_addr := 0.U
   io.rvfi.pc_rdata := 0.U
   io.rvfi.pc_wdata := 0.U
-  past(PC, 3) { past_pc =>
-    io.rvfi.pc_wdata := past_pc
+
+  io.take := 0.U
+  past(takeBranch, 3) { past_v =>
+    io.take := past_v
   }
-  past(LastPC, 3) { past_v =>
+  past(CurPC, 3) { past_v =>
+    io.rvfi.valid := true.B
     io.rvfi.pc_rdata := past_v
+  }
+  past(NextPC, 2) { past_pc =>
+    io.rvfi.pc_wdata := past_pc
   }
   past(IFIDrs1, 3) { past_rs1 =>
     io.rvfi.rs1_addr := past_rs1
@@ -167,6 +188,10 @@ class RISCVCPUv2 extends Module with Formal {
   past(EXMEMB, 1) { past_mem_wdata =>
     io.rvfi.mem_wdata := past_mem_wdata
   }
+}
+
+object RISCVCPUv2 extends App {
+  Check.generateRTL(() => new RISCVCPUv2)
 }
 
 
