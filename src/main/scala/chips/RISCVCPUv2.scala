@@ -2,7 +2,7 @@ package chips
 
 import chisel3._
 import chisel3.util._
-import chiselsby._
+import chiselFv._
 import spec.RVFI_IO
 
 
@@ -60,8 +60,8 @@ class RISCVCPUv2 extends Module with Formal {
   val NextPC   = RegInit(0.U(64.W))
 
 
-  when(~stall) {
-    when(~takeBranch) {
+  when((~stall).asBool) {
+    when((~takeBranch).asBool) {
       // first instruction in pipeline is being fetched
       // Fetch & increment PC
       IFIDIR := IMemory.read((PC >> 2.U).asUInt)
