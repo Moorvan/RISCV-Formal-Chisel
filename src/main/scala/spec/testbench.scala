@@ -6,7 +6,7 @@ import chiselFv._
 import spec.insns._
 
 
-class RVFI_IO() extends Bundle {
+class RVFI_IO extends Bundle {
   val valid     = Output(Bool())
   val insn      = Output(UInt(32.W))
   val pc_rdata  = Output(UInt(32.W))
@@ -23,7 +23,7 @@ class RVFI_IO() extends Bundle {
   val regs      = Vec(32, Output(UInt(32.W)))
 }
 
-class spec_out() extends Bundle {
+class spec_out extends Bundle {
   val valid     = Output(Bool())
   val rs1_addr  = Output(UInt(5.W))
   val rs2_addr  = Output(UInt(5.W))
@@ -40,19 +40,19 @@ class spec_out() extends Bundle {
 class testbench extends Module with Formal {
   val model = Module(new RISCVCPUv2).io
 
-//  // instruction add check
-//  val insn_add_spec  = Module(new insn_add).io
-//  val insn_add_check = Module(new insn_check).io
-//  insn_add_spec.in := model.rvfi
-//  insn_add_check.model_out := model.rvfi
-//  insn_add_check.spec_out := insn_add_spec.spec_out
-//
-//  // instruction ld check
-//  val insn_ld_spec  = Module(new insn_ld).io
-//  val insn_ld_check = Module(new insn_check).io
-//  insn_ld_spec.in := model.rvfi
-//  insn_ld_check.model_out := model.rvfi
-//  insn_ld_check.spec_out := insn_ld_spec.spec_out
+  // instruction add check
+  val insn_add_spec  = Module(new insn_add).io
+  val insn_add_check = Module(new insn_check).io
+  insn_add_spec.in := model.rvfi
+  insn_add_check.model_out := model.rvfi
+  insn_add_check.spec_out := insn_add_spec.spec_out
+
+  // instruction ld check
+  val insn_ld_spec  = Module(new insn_ld).io
+  val insn_ld_check = Module(new insn_check).io
+  insn_ld_spec.in := model.rvfi
+  insn_ld_check.model_out := model.rvfi
+  insn_ld_check.spec_out := insn_ld_spec.spec_out
 
   // instruction beq check
   val insn_beq_spec = Module(new insn_beq).io
@@ -60,12 +60,16 @@ class testbench extends Module with Formal {
   insn_beq_spec.in := model.rvfi
   insn_beq_check.model_out := model.rvfi
   insn_beq_check.spec_out := insn_beq_spec.spec_out
-//  assert(model.take === insn_beq_spec.take)
+
+  when(model.rvfi.valid && insn_beq_spec.spec_out.valid) {
+//    assert(model.take === insn_beq_spec.take)
+//    assert(model.rvfi.pc_wdata === insn_beq_spec.spec_out.pc_wdata)
+  }
 }
 
 
 object testbench extends App {
-  Check.bmc(() => new testbench, 10)
-//    Check.kInduction(() => new testbench, 15)
+  Check.bmc(() => new testbench)
+//  Check.kInduction(() => new testbench, 20)
 //  Check.pdr(() => new testbench, 10)
 }

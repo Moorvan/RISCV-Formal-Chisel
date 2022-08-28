@@ -30,7 +30,7 @@ class insn_beq extends Module with Formal {
   val cond = spec_rs1_rdata === spec_rs2_rdata
   val spec_pc_wdata = Mux(cond, (spec_pc_rdata.asSInt + insn_imm).asUInt, spec_pc_rdata + 4.U)
 
-  io.spec_out.valid := (insn_padding.asUInt === 0.U) && (insn_funct3 === 0.U) && (insn_opcode === "b1100011".U(7.W))
+  io.spec_out.valid := (insn_padding.asUInt === 0.U) && (insn_funct3 === 0.U) && (insn_opcode === "b110_0011".U(7.W))
   io.spec_out.rs1_addr := spec_rs1_addr
   io.spec_out.rs2_addr := spec_rs2_addr
   io.spec_out.rs1_rdata := spec_rs1_rdata
