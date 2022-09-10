@@ -143,12 +143,12 @@ class RISCVCPUWithForwarding extends Module with Formal {
   past(IDEXB, 2) { past_rs2_data =>
     io.rvfi.rs2_rdata := past_rs2_data
   }
-    past(Ain, 2) { past_rs1_data =>
-      io.rvfi.rs1_rdata := past_rs1_data
-    }
-    past(Bin, 2) { past_rs2_data =>
-      io.rvfi.rs2_rdata := past_rs2_data
-    }
+  past(Ain, 2) { past_rs1_data =>
+    io.rvfi.rs1_rdata := past_rs1_data
+  }
+  past(Bin, 2) { past_rs2_data =>
+    io.rvfi.rs2_rdata := past_rs2_data
+  }
   io.rvfi.rd_addr := MEMWBrd
   past(EXMEMALUOut, 1) { past_mem_addr =>
     io.rvfi.mem_addr := past_mem_addr

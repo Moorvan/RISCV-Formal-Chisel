@@ -11,7 +11,6 @@ class insn_add extends Module with Formal {
     val spec_out = new spec_out
   })
 
-
   val insn      = io.in.insn
   val pc_rdata  = io.in.pc_rdata
   val pc_wdata  = io.in.pc_wdata

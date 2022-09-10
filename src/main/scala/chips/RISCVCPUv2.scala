@@ -8,12 +8,12 @@ import spec.RVFI_IO
 
 class RISCVCPUv2 extends Module with Formal {
   val io    = IO(new Bundle {
-    val rvfi  = new RVFI_IO
-    val take  = Output(Bool())
+    val rvfi = new RVFI_IO
+    val take = Output(Bool())
   })
   val LD    = "b000_0011".U(7.W)
   val SD    = "b010_0011".U(7.W)
-  val BEQ   = "b110_0011".U(7.W)
+  val BEQ   = "b110_0011".U(7.W) // (6/E)3
   val NOP   = "h0000_0013".U(32.W)
   val ALUop = "b011_0011".U(7.W)
 
@@ -53,6 +53,8 @@ class RISCVCPUv2 extends Module with Formal {
   var A, B       = WireInit(0.U(64.W))
   val takeBranch = (IFIDop === BEQ) && (IFID_funct3 === 0.U) && (A === B)
 
+  //  val takeBranch = (IFIDop === BEQ) && (IFID_funct3 === 0.U) && (IFIDrs1 === IFIDrs2)
+
   // Auxiliary
   val MEMWBrs1 = MEMWBIR(19, 15)
   val MEMWBrs2 = MEMWBIR(24, 20)
@@ -60,7 +62,7 @@ class RISCVCPUv2 extends Module with Formal {
   val NextPC   = RegInit(0.U(64.W))
 
 
-//  assume(stall === false.B)
+  //  assume(stall === false.B)
   when((~stall).asBool) {
     when((~takeBranch).asBool) {
       // first instruction in pipeline is being fetched

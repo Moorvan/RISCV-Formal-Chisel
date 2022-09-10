@@ -52,7 +52,7 @@ class RISCVCPUv1 extends Module with Formal {
   val MEMWBrs2: UInt = MEMWBIR(24, 20)
   val LastPC = RegInit(0.U(64.W))
 
-  when(~stall) {
+  when((~stall).asBool) {
     // first instruction in pipeline is being fetched
     // Fetch & increment PC
     IFIDIR := IMemory.read((PC >> 2.U).asUInt)
