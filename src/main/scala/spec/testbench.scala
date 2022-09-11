@@ -31,6 +31,7 @@ class spec_out extends Bundle {
   val rs2_rdata = Output(UInt(64.W))
   val rd_addr   = Output(UInt(5.W))
   val rd_wdata  = Output(UInt(64.W))
+  val pc_rdata = Output(UInt(64.W))
   val pc_wdata  = Output(UInt(64.W))
   val mem_addr  = Output(UInt(32.W))
   val mem_wdata = Output(UInt(64.W))
@@ -61,12 +62,6 @@ class testbench extends Module with Formal {
   insn_beq_check.model_out := model.rvfi
   insn_beq_check.spec_out := insn_beq_spec.spec_out
 
-  when(model.rvfi.valid && insn_beq_spec.spec_out.valid) {
-//    assert(model.rvfi.rs1_rdata === insn_beq_spec.spec_out.rs1_rdata)
-//    assert(model.rvfi.rs2_rdata === insn_beq_spec.spec_out.rs2_rdata)
-    assert(model.take === insn_beq_spec.take)
-//    assert(model.rvfi.pc_wdata === insn_beq_spec.spec_out.pc_wdata)
-  }
 }
 
 

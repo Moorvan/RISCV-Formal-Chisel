@@ -72,7 +72,7 @@ class RISCVCPUv2 extends Module with Formal {
       NextPC := PC
     }.otherwise {
       IFIDIR := NOP
-      val branchTarget = (PC.asSInt + Cat(IFIDIR(31), IFIDIR(7), IFIDIR(30, 25), IFIDIR(11, 8), "b0".U(1.W)).asSInt).asUInt
+      val branchTarget = (CurPC.asSInt + Cat(IFIDIR(31), IFIDIR(7), IFIDIR(30, 25), IFIDIR(11, 8), "b0".U(1.W)).asSInt).asUInt
       PC := branchTarget
       NextPC := branchTarget
     }

@@ -37,6 +37,8 @@ class insn_beq extends Module with Formal {
   io.spec_out.rs2_rdata := spec_rs2_rdata
   io.spec_out.pc_wdata := spec_pc_wdata
 
+  io.spec_out.pc_rdata := spec_pc_rdata
+
   // without check
   io.spec_out.rd_addr := io.in.rd_addr
   io.spec_out.rd_wdata := io.in.rd_wdata
