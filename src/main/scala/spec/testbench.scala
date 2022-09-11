@@ -31,7 +31,6 @@ class spec_out extends Bundle {
   val rs2_rdata = Output(UInt(64.W))
   val rd_addr   = Output(UInt(5.W))
   val rd_wdata  = Output(UInt(64.W))
-  val pc_rdata = Output(UInt(64.W))
   val pc_wdata  = Output(UInt(64.W))
   val mem_addr  = Output(UInt(32.W))
   val mem_wdata = Output(UInt(64.W))
@@ -42,18 +41,18 @@ class testbench extends Module with Formal {
   val model = Module(new RISCVCPUv2).io
 
   // instruction add check
-//  val insn_add_spec  = Module(new insn_add).io
-//  val insn_add_check = Module(new insn_check).io
-//  insn_add_spec.in := model.rvfi
-//  insn_add_check.model_out := model.rvfi
-//  insn_add_check.spec_out := insn_add_spec.spec_out
+ val insn_add_spec  = Module(new insn_add).io
+ val insn_add_check = Module(new insn_check).io
+ insn_add_spec.in := model.rvfi
+ insn_add_check.model_out := model.rvfi
+ insn_add_check.spec_out := insn_add_spec.spec_out
 
   // instruction ld check
-//  val insn_ld_spec  = Module(new insn_ld).io
-//  val insn_ld_check = Module(new insn_check).io
-//  insn_ld_spec.in := model.rvfi
-//  insn_ld_check.model_out := model.rvfi
-//  insn_ld_check.spec_out := insn_ld_spec.spec_out
+ val insn_ld_spec  = Module(new insn_ld).io
+ val insn_ld_check = Module(new insn_check).io
+ insn_ld_spec.in := model.rvfi
+ insn_ld_check.model_out := model.rvfi
+ insn_ld_check.spec_out := insn_ld_spec.spec_out
 
   // instruction beq check
   val insn_beq_spec = Module(new insn_beq).io
@@ -61,7 +60,6 @@ class testbench extends Module with Formal {
   insn_beq_spec.in := model.rvfi
   insn_beq_check.model_out := model.rvfi
   insn_beq_check.spec_out := insn_beq_spec.spec_out
-
 }
 
 

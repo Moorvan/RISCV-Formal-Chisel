@@ -9,7 +9,7 @@ import spec.RVFI_IO
 class RISCVCPUv2 extends Module with Formal {
   val io    = IO(new Bundle {
     val rvfi = new RVFI_IO
-    val take = Output(Bool())
+    val add_out = Output(UInt(64.W))
   })
   val LD    = "b000_0011".U(7.W)
   val SD    = "b010_0011".U(7.W)
@@ -159,10 +159,6 @@ class RISCVCPUv2 extends Module with Formal {
   io.rvfi.pc_rdata := 0.U
   io.rvfi.pc_wdata := 0.U
 
-  io.take := 0.U
-  past(takeBranch, 3) { past_v =>
-    io.take := past_v
-  }
   past(CurPC, 3) { past_v =>
     io.rvfi.valid := true.B
     io.rvfi.pc_rdata := past_v
@@ -181,6 +177,10 @@ class RISCVCPUv2 extends Module with Formal {
   }
   past(IDEXB, 2) { past_rs2_data =>
     io.rvfi.rs2_rdata := past_rs2_data
+  }
+  io.add_out := 0.U
+  past(IDEXA + IDEXB, 2) { v =>
+    io.add_out := v
   }
   io.rvfi.rd_addr := MEMWBrd
   past(EXMEMALUOut, 1) { past_mem_addr =>

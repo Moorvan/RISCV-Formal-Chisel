@@ -39,7 +39,7 @@ class insn_add extends Module with Formal {
   val spec_rs2_rdata = io.in.regs(spec_rs2_addr)
   val spec_rd_addr   = insn_rd
   val result         = spec_rs1_rdata + spec_rs2_rdata
-  val spec_rd_wdata  = Wire(UInt(32.W))
+  val spec_rd_wdata  = Wire(UInt(64.W))
   when(spec_rd_addr === 0.U) {
     spec_rd_wdata := 0.U
   }.otherwise {

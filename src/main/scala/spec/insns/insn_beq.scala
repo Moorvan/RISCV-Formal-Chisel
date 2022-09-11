@@ -9,7 +9,6 @@ class insn_beq extends Module with Formal {
   val io = IO(new Bundle() {
     val in       = Flipped(new RVFI_IO)
     val spec_out = new spec_out
-    val take = Output(Bool())
   })
 
   val insn = io.in.insn
@@ -37,15 +36,11 @@ class insn_beq extends Module with Formal {
   io.spec_out.rs2_rdata := spec_rs2_rdata
   io.spec_out.pc_wdata := spec_pc_wdata
 
-  io.spec_out.pc_rdata := spec_pc_rdata
-
   // without check
   io.spec_out.rd_addr := io.in.rd_addr
   io.spec_out.rd_wdata := io.in.rd_wdata
   io.spec_out.mem_addr := io.in.mem_addr
   io.spec_out.mem_wdata := io.in.mem_wdata
-
-  io.take := cond
 }
 
 object insn_beq extends App {
