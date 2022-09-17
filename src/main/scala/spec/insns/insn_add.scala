@@ -32,7 +32,7 @@ class insn_add extends Module with Formal {
   val insn_opcode  = insn(6, 0)
 
   // ADD instruction
-  val sepc_valid     = insn_padding.asUInt === 0.U && insn_funct7 === 0.U && insn_funct3 === 0.U && insn_opcode === "b0110011".U
+  val sepc_valid     = insn_padding.asUInt === 0.U && insn_funct7 === 0.U && insn_funct3 === 0.U && insn_opcode === "b011_0011".U
   val spec_rs1_addr  = insn_rs1
   val spec_rs2_addr  = insn_rs2
   val spec_rs1_rdata = io.in.regs(spec_rs1_addr)

@@ -45,15 +45,15 @@ class RISCVCPUv2 extends Module with Formal {
   val bypassBFromEX  = (IFIDrs2 === IDEXrd) && (IFIDrs2 =/= 0.U) && (IDEXop === ALUop)
 
   val stall = (
-    (EXMEMop === LD) && ((IFIDrs1 === EXMEMrd) || (IFIDrs2 === EXMEMrd))
+    (EXMEMop === LD) && (((IFIDrs1 === EXMEMrd) && (IFIDrs1 =/= 0.U)) || ((IFIDrs2 === EXMEMrd) && (IFIDrs2 =/= 0.U)))
     ) || (
-    (IDEXop === LD) && ((IFIDrs1 === IDEXrd) || (IFIDrs2 === IDEXrd))
+    (IDEXop === LD) && (((IFIDrs1 === IDEXrd) && (IFIDrs1 =/= 0.U)) || ((IFIDrs2 === IDEXrd) && (IFIDrs2 =/= 0.U)))
     )
 
   var A, B       = WireInit(0.U(64.W))
   val takeBranch = (IFIDop === BEQ) && (IFID_funct3 === 0.U) && (A === B)
 
-  //  val takeBranch = (IFIDop === BEQ) && (IFID_funct3 === 0.U) && (IFIDrs1 === IFIDrs2)
+  // val takeBranch = (IFIDop === BEQ) && (IFID_funct3 === 0.U) && (Regs(IFIDrs1) === Regs(IFIDrs2))
 
   // Auxiliary
   val MEMWBrs1 = MEMWBIR(19, 15)
