@@ -13,6 +13,6 @@ docker build -t chiselfv:v0 .
 
 In the classic architecture textbooks, *Computer Organization and Design RISC-V Edition*, a simple five-stage pipeline is given. 
 
-<img src="https://github.com/Moorvan/PictureHost/blob/main/chiselfv/5pipeline.png?raw=true" height="540" />
+<img src="https://github.com/Moorvan/PictureHost/blob/main/chiselfv/5pipeline.png?raw=true" height="480" />
 
 ## Formal Verification
