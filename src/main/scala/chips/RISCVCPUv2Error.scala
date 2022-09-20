@@ -6,9 +6,9 @@ import chiselFv._
 import spec.RVFI_IO
 
 
-class RISCVCPUv2 extends Module with Formal {
+class RISCVCPUv2Error extends Module with Formal {
   val io    = IO(new Bundle {
-    val rvfi = new RVFI_IO
+    val rvfi    = new RVFI_IO
     val add_out = Output(UInt(64.W))
   })
   val LD    = "b000_0011".U(7.W)
@@ -51,7 +51,7 @@ class RISCVCPUv2 extends Module with Formal {
     )
 
   var A, B       = WireInit(0.U(64.W))
-  val takeBranch = (IFIDop === BEQ) && (IFID_funct3 === 0.U) && (A === B)
+  val takeBranch = (IFIDop === BEQ) && (IFID_funct3 === 0.U) && (Regs(IFIDrs1) === Regs(IFIDrs2))
 
   // Auxiliary
   val MEMWBrs1 = MEMWBIR(19, 15)
@@ -191,9 +191,7 @@ class RISCVCPUv2 extends Module with Formal {
   }
 }
 
-object RISCVCPUv2 extends App {
-  Check.generateRTL(() => new RISCVCPUv2)
-}
+
 
 
 
