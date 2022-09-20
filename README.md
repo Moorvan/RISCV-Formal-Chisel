@@ -131,3 +131,12 @@ Because the verification model here is more complex, only 20 steps of the BMC ch
 In the check of the correctness of the execution of the BEQ instruction, we found an error. The verification engine gave an incorrect execution path, and part of the signals are shown in the following figure:
 
 <img src="https://github.com/Moorvan/PictureHost/blob/main/chiselfv/trace.png?raw=true" style="zoom:67%;" />
+
+We translated the instructions and summarized the relevant key information as shown in the following table:
+
+<img src="https://github.com/Moorvan/PictureHost/blob/main/chiselfv/cex.png?raw=true" height="300"/>
+
+For the BEQ instruction, we need to compare the value of the two source operands, but in the original design, these two source operands were not considered data hazards. 
+Instead, they were directly taken from the register.
+
+Later, we modified the design on the Chisel version and passed the relevant verification. The correct design is the RISCVCPUv2 module, and the original design is the RISCVCPUv2Error module.
