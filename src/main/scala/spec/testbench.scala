@@ -60,6 +60,13 @@ class testbench extends Module with Formal {
   insn_beq_spec.in := model.rvfi
   insn_beq_check.model_out := model.rvfi
   insn_beq_check.spec_out := insn_beq_spec.spec_out
+
+  // instruction sd check
+  val insn_sd_spec = Module(new insn_sd).io
+  val insn_sd_check = Module(new insn_check).io
+  insn_sd_spec.in := model.rvfi
+  insn_sd_check.model_out := model.rvfi
+  insn_sd_check.spec_out := insn_sd_spec.spec_out
 }
 
 
