@@ -67,6 +67,8 @@ Here, the meaning of each signal is:
 - regs: The value of all registers.
 
 Next, we define the Spec module. There can be many Spec modules, each Spec module describes the correct execution of a small property or a specific instruction of the processor. The input of each Spec module is also the RVFI signal. In the Spec module, we define how the key signals of the processor should change under the condition that the verification property is satisfied, and then output the spec_out signal.
+For example, in the Spec module corresponding to the ADD instruction, we assume that the content of the instruction and the value of the registers in the output RVFI signal is correct. Then, according to the behavior definition of the ADD instruction in the RISC-V ISA, we give the value of the other signals defined in the spec_out. For example, the source operand address is decoded for the instruction, and the source operand value is obtained from the register signal output by RVFI according to the source operand address. These values are used as spec_out.
+
 
 ```scala
 class spec_out extends Bundle {
@@ -136,7 +138,14 @@ We translated the instructions and summarized the relevant key information as sh
 
 <img src="https://github.com/Moorvan/PictureHost/blob/main/chiselfv/cex.png?raw=true" height="300"/>
 
-For the BEQ instruction, we need to compare the value of the two source operands, but in the original design, these two source operands were not considered data hazards. 
-Instead, they were directly taken from the register.
+From the above table, we can see that the fifth instruction in this sequence is the BEQ instruction. The instruction content corresponding to the decoded instruction is BEQ x17, x20, 32. Its meaning is to compare the values of the x17 and x20 registers. If they are equal, the next instruction will jump. And the target address of the jump is the current PC value plus 0x20.
+The current state of the relevant register values is that the value in the x17 register is 0x80000001, and the value in the x20 register is 0x0, which are not equal, so the correct result is that there will be no jump. However, in the given instruction sequence, a NOP instruction is inserted as a null instruction insertion for the jump prediction failure the next time. Then the instruction jumps to 0x2C. This is not by the ISA specification.
+
+Further analysis of the given counterexample data (a VCD file, giving the assignment of each variable at each time in the path) shows that when the BEQ instruction is executed, the two source operands to be compared are both 0x0. In the current five-stage pipeline design, the LD instruction before the execution of the BEQ instruction is not completed, and the last step of the write-back has not occurred. Therefore, when the BEQ instruction is executed, the values of the x17 and x20 registers have not been updated. Here we need to design forwarding to get the real values of x17 and x20 to avoid errors caused by data hazards.
+
+So we can conclude that the forwarding design for the source operands of BEQ in the original design is wrong. After checking the design, the error was confirmed.
+
+<!-- For the BEQ instruction, we need to compare the value of the two source operands, but in the original design, these two source operands were not considered data hazards.  -->
+<!-- Instead, they were directly taken from the register. -->
 
 Later, we modified the design on the Chisel version and passed the relevant verification. The correct design is the RISCVCPUv2 module, and the original design is the RISCVCPUv2Error module.
