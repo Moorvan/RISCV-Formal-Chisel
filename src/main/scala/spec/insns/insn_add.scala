@@ -62,6 +62,6 @@ class insn_add extends Module with Formal {
 }
 
 
-object insn_add extends App {
-  Check.generateRTL(() => new insn_add())
-}
+//object insn_add extends App {
+//  Check.generateRTL(() => new insn_add())
+//}

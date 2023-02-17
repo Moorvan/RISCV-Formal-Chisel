@@ -55,7 +55,7 @@ class insn_ld extends Module with Formal {
   io.spec_out.mem_wdata := io.in.mem_wdata
 }
 
-object insn_ld extends App {
-  Check.generateRTL(() => new insn_ld)
-}
+//object insn_ld extends App {
+//  Check.generateRTL(() => new insn_ld)
+//}
 

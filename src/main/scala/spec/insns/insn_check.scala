@@ -32,6 +32,6 @@ class insn_check extends Module with Formal {
 }
 
 
-object insn_check extends App {
-  Check.generateRTL(() => new insn_check)
-}
+//object insn_check extends App {
+//  Check.generateRTL(() => new insn_check)
+//}

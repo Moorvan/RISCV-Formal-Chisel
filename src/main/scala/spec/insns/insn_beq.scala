@@ -43,6 +43,6 @@ class insn_beq extends Module with Formal {
   io.spec_out.mem_wdata := io.in.mem_wdata
 }
 
-object insn_beq extends App {
-  Check.generateRTL(() => new insn_beq)
-}
+//object insn_beq extends App {
+//  Check.generateRTL(() => new insn_beq)
+//}
