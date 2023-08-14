@@ -28,7 +28,7 @@ class insn_ld extends Module with Formal {
   val insn_rd      = insn(11, 7)
   val insn_opcode  = insn(6, 0)
 
-  val spec_valid     = (insn_funct3 === 0.U) && (insn_opcode === "b0000011".U)
+  val spec_valid     = (insn_funct3 === 3.U) && (insn_opcode === "b0000011".U)
   val spec_rs1_addr  = insn_rs1
   val spec_rd_addr   = insn_rd
   val spec_rs1_rdata = io.in.regs(spec_rs1_addr)
