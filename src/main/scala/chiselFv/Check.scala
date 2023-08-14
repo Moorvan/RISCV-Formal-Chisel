@@ -36,6 +36,7 @@ object Check {
        |prep -top $top -nordff
        |flatten
        |memory -nomap
+       |memory_nordff
        |hierarchy -check
        |setundef -undriven -init -expose
        |write_btor -s ${if (targetFilename == "") top else targetFilename}.btor2
