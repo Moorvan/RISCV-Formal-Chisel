@@ -63,7 +63,9 @@ object Check {
     val dirName = mod + "_" + mode
 
     val dir = new File(dirName)
-    val files = dir.listFiles.filter(_.getName.endsWith(".sv")).map(_.getName)
+    val files = dir.listFiles.filter({ f =>
+      f.getName.endsWith(".sv") || f.getName.endsWith(".v")
+    }).map(_.getName)
 
     if (dir.listFiles.exists(_.getName.equals(mod))) {
       new ProcessBuilder("rm", "-rf", "./" + mod).directory(dir).start()
